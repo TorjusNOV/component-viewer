@@ -192,6 +192,57 @@ This section defines the project-specific methods currently implemented by this 
 
 ### Methods from EWO to Project
 
+#### 0) `ping`
+
+Health check method.
+
+`payload.params`: none required.
+
+Success result (`app_response.payload.result`):
+
+- `ok`: `true`
+- `time_ms`: engine tick time in milliseconds
+
+Example:
+
+```json
+{
+  "type": "app_request",
+  "route": "component-viewer",
+  "correlation_id": "d7165c3a-4f39-4d32-89f7-d08cb4cf0f97",
+  "method": "ping",
+  "payload": {
+    "schema_version": 1,
+    "params": {}
+  }
+}
+```
+
+#### 0a) `get_state`
+
+Returns the current project state snapshot.
+
+`payload.params`: none required.
+
+Success result (`app_response.payload.result`):
+
+- Current project state snapshot (see "State Fields Useful for EWO").
+
+Example:
+
+```json
+{
+  "type": "app_request",
+  "route": "component-viewer",
+  "correlation_id": "2ac9b4d9-00c2-4455-95cb-9efc9d0a2b52",
+  "method": "get_state",
+  "payload": {
+    "schema_version": 1,
+    "params": {}
+  }
+}
+```
+
 #### 1) `load_machine`
 
 Loads a new machine scene.
@@ -345,6 +396,46 @@ Success result (`app_response.payload.result`):
 
 - `camera_transform`: `{ position, rotation }`
 
+#### 2bb) `set_camera_transform`
+
+Sets camera transform directly.
+
+`payload.params`:
+
+- `camera_transform` (required):
+  - `position`: `{x,y,z}`
+  - `rotation`: `{x,y,z}`
+- `transition_sec` (optional, default viewer `default_view_transition_sec`)
+
+Success result (`app_response.payload.result`):
+
+- Current project state snapshot
+
+Errors (`app_error.payload.error.code`):
+
+- `invalid_request` when `camera_transform` is missing/invalid.
+
+Example:
+
+```json
+{
+  "type": "app_request",
+  "route": "component-viewer",
+  "correlation_id": "997d6cbf-f81d-48e0-ab65-f3fb7d8ac7ad",
+  "method": "set_camera_transform",
+  "payload": {
+    "schema_version": 1,
+    "params": {
+      "camera_transform": {
+        "position": {"x": 4.0, "y": 2.0, "z": -5.0},
+        "rotation": {"x": -0.2, "y": 0.9, "z": 0.0}
+      },
+      "transition_sec": 1.0
+    }
+  }
+}
+```
+
 #### 2c) `list_machine_scenes`
 
 Returns available machine scene names discovered under `res://machine_scenes`.
@@ -479,6 +570,35 @@ Example:
 }
 ```
 
+#### 3a) `set_editor_sub_mode`
+
+Sets editor sub mode.
+
+`payload.params`:
+
+- `mode` (string, required): `SELECT` or `ADD`
+
+Success result (`app_response.payload.result`):
+
+- Current project state snapshot.
+
+Example:
+
+```json
+{
+  "type": "app_request",
+  "route": "component-viewer",
+  "correlation_id": "f9f18b20-4e5c-4ca4-9d1f-f95cc52db0da",
+  "method": "set_editor_sub_mode",
+  "payload": {
+    "schema_version": 1,
+    "params": {
+      "mode": "ADD"
+    }
+  }
+}
+```
+
 #### 4) `toggle_editor_mode`
 
 Toggles editor mode.
@@ -506,22 +626,17 @@ Current state snapshot includes:
 
 ### Project Events Emitted
 
-The project can emit `app_event` frames including:
+The project emits `app_event` frames with the following behavior:
 
-- `viewer_ready`
-- `machine_loaded`
-- `machine_unloaded`
-- `display_box_changed`
-- `box_deleted`
-- `boxes_hidden`
-- `box_transform_updated`
-- `editor_mode_changed`
-- `selection_changed`
-- `box_view_captured`
-- `camera_view_applied`
-
-`box_transform_updated` is emitted when:
-
-- A box becomes selected.
-- A selected box is transformed via gizmo and left mouse button is released.
-- `set_selected_box_transform` is applied over IPC.
+- `viewer_ready`: Sent when the IPC bridge connects and the project is ready to serve app requests.
+- `machine_loaded`: Sent after `load_machine` succeeds.
+- `machine_unloaded`: Sent when `load_machine` is called without `machine_name` and the active machine is unloaded.
+- `display_box_changed`: Sent after display target box changes (for example via `show_box`).
+- `box_deleted`: Sent when a box is deleted (Delete key or IPC deletion path).
+- `boxes_hidden`: Sent when all boxes are removed via `hide_boxes` (or internal hide-all flow).
+- `box_transform_updated`: Sent when a selected box transform changes. Triggered on box selection, gizmo edit release (left mouse button up), and `set_selected_box_transform`.
+- `camera_transform_updated`: Sent when camera transform is changed via `set_camera_transform`.
+- `editor_mode_changed`: Sent whenever `set_editor_mode` or `toggle_editor_mode` changes editor mode.
+- `selection_changed`: Sent when selection is set or cleared.
+- `box_view_captured`: Sent after capturing current camera view into the selected box.
+- `camera_view_applied`: Sent after applying a selected box's saved camera view.

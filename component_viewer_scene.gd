@@ -559,10 +559,36 @@ func _on_ipc_request_received(method: String, params: Dictionary, correlation_id
 					"rotation": _vector3_to_dict(camera.global_rotation)
 				}
 			})
-		"list_machine_scenes":
-			ipc_bridge.send_response(correlation_id, {
-				"machine_names": _list_machine_names()
+		"set_camera_transform":
+			if !params.has("camera_transform"):
+				ipc_bridge.send_error(correlation_id, "invalid_request", "Missing camera_transform")
+				return
+
+			var target_camera_transform := _parse_transform_param(params.get("camera_transform", {}))
+			if target_camera_transform == null:
+				ipc_bridge.send_error(correlation_id, "invalid_request", "Invalid camera_transform")
+				return
+
+			var transition_sec: float = default_view_transition_sec
+			if params.has("transition_sec"):
+				transition_sec = max(float(params.get("transition_sec", default_view_transition_sec)), 0.0)
+
+			camera.set_view(
+				target_camera_transform.get("position", camera.global_position),
+				target_camera_transform.get("rotation", camera.global_rotation),
+				transition_sec
+			)
+
+			_emit_bridge_event("camera_transform_updated", {
+				"camera_transform": {
+					"position": _vector3_to_dict(target_camera_transform.get("position", camera.global_position)),
+					"rotation": _vector3_to_dict(target_camera_transform.get("rotation", camera.global_rotation))
+				},
+				"transition_sec": transition_sec,
+				"source": "ipc"
 			})
+
+			ipc_bridge.send_response(correlation_id, _build_state_snapshot())
 		"set_editor_sub_mode":
 			var mode_name: String = str(params.get("mode", "SELECT")).to_upper()
 			if mode_name == "ADD":
@@ -570,19 +596,9 @@ func _on_ipc_request_received(method: String, params: Dictionary, correlation_id
 			else:
 				set_editor_sub_mode(EditorSubMode.SELECT)
 			ipc_bridge.send_response(correlation_id, _build_state_snapshot())
-		"set_gizmo_tool":
-			var tool_name: String = str(params.get("tool", "TRANSLATE")).to_upper()
-			if tool_name == "ROTATE":
-				current_gizmo_tool = GizmoToolMode.ROTATE
-			elif tool_name == "SCALE":
-				current_gizmo_tool = GizmoToolMode.SCALE
-			else:
-				current_gizmo_tool = GizmoToolMode.TRANSLATE
-			_apply_gizmo_tool_mode()
-			ipc_bridge.send_response(correlation_id, _build_state_snapshot())
-		"list_boxes":
+		"list_machine_scenes":
 			ipc_bridge.send_response(correlation_id, {
-				"boxes": _build_box_list()
+				"machine_names": _list_machine_names()
 			})
 		"hide_boxes":
 			var removed_count: int = hide_all_boxes("ipc")
@@ -590,28 +606,6 @@ func _on_ipc_request_received(method: String, params: Dictionary, correlation_id
 				"removed_count": removed_count,
 				"state": _build_state_snapshot()
 			})
-		"select_box":
-			var box := _get_box_by_index(int(params.get("index", -1)))
-			if box == null:
-				ipc_bridge.send_error(correlation_id, "invalid_index", "Box index does not exist")
-				return
-			if !editor_mode:
-				set_editor_mode(true)
-			_select_box(box)
-			ipc_bridge.send_response(correlation_id, _build_state_snapshot())
-		"delete_box":
-			var box_to_delete := _get_box_by_index(int(params.get("index", -1)))
-			if box_to_delete == null:
-				ipc_bridge.send_error(correlation_id, "invalid_index", "Box index does not exist")
-				return
-			_delete_box(box_to_delete, "ipc")
-			ipc_bridge.send_response(correlation_id, _build_state_snapshot())
-		"capture_selected_view":
-			capture_view_for_selected_box()
-			ipc_bridge.send_response(correlation_id, _build_state_snapshot())
-		"apply_selected_view":
-			apply_view_from_selected_box()
-			ipc_bridge.send_response(correlation_id, _build_state_snapshot())
 		_:
 			ipc_bridge.send_error(correlation_id, "method_not_found", "Unsupported method: %s" % method)
 
@@ -631,24 +625,6 @@ func _build_state_snapshot() -> Dictionary:
 			"rotation": _vector3_to_dict(camera.global_rotation)
 		}
 	}
-
-func _build_box_list() -> Array:
-	var result: Array = []
-	var index: int = 0
-	for child in box_container.get_children():
-		if child is BoxItem:
-			var box: BoxItem = child as BoxItem
-			result.append({
-				"index": index,
-				"position": _vector3_to_dict(box.global_position),
-				"rotation": _vector3_to_dict(box.global_rotation),
-				"scale": _vector3_to_dict(box.scale),
-				"has_saved_camera_view": box.has_saved_camera_view,
-				"camera_position": _vector3_to_dict(box.saved_camera_position),
-				"camera_rotation": _vector3_to_dict(box.saved_camera_rotation)
-			})
-			index += 1
-	return result
 
 func _get_box_by_index(index: int) -> BoxItem:
 	if index < 0:

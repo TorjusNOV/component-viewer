@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://cny2g8v4pvbtm"]
+
+[ext_resource type="Script" uid="uid://g1xgdbak143c" path="res://component_viewer_scene.gd" id="1_tj56o"]
+[ext_resource type="PackedScene" uid="uid://dcv1nxym1h5ru" path="res://BoxItem.tscn" id="2_68jww"]
+[ext_resource type="Script" uid="uid://e3f1ox6y6cvg" path="res://addons/Gizmo3DScript/gizmo3D.gd" id="2_tj56o"]
+[ext_resource type="Script" uid="uid://dfy584nvomyx0" path="res://camera_3d.gd" id="3_suixk"]
+[ext_resource type="PackedScene" uid="uid://dcm1161ol4gce" path="res://dope_stabber.scn" id="3_tj56o"]
+
+[node name="Main" type="Node3D" unique_id=1800062196]
+script = ExtResource("1_tj56o")
+box_scene = ExtResource("2_68jww")
+default_box_scale = Vector3(0.05, 0.05, 0.05)
+switch_to_select_after_add = true
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=419025487]
+script = ExtResource("3_suixk")
+
+[node name="Gizmo3D" type="Node3D" parent="." unique_id=1159400894]
+script = ExtResource("2_tj56o")
+metadata/_custom_type_script = "uid://e3f1ox6y6cvg"
+
+[node name="BoxContainer" type="Node3D" parent="." unique_id=1650702417]
+
+[node name="World" type="Node3D" parent="." unique_id=208190720]
+
+[node name="dope_stabber" parent="World" unique_id=634403871 instance=ExtResource("3_tj56o")]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=720645885]
+transform = Transform3D(1, 0, 0, 0, 0.60228884, 0.7982782, 0, -0.7982782, 0.60228884, 0, 1.4191765, 0)

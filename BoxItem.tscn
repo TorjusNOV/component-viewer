@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://dcv1nxym1h5ru"]
+
+[ext_resource type="Script" uid="uid://c8wgye2grnfbs" path="res://box_item.gd" id="1_iyjkq"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_dj3co"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_dj3co"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wcrr6"]
+transparency = 1
+albedo_color = Color(0.30588236, 0.70980394, 0, 0.6745098)
+
+[node name="BoxItem" type="Node3D" unique_id=1805078987]
+script = ExtResource("1_iyjkq")
+
+[node name="Body" type="StaticBody3D" parent="." unique_id=1804384449]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Body" unique_id=275890604]
+shape = SubResource("BoxShape3D_dj3co")
+
+[node name="Box" type="MeshInstance3D" parent="Body" unique_id=1504447658]
+mesh = SubResource("BoxMesh_dj3co")
+surface_material_override/0 = SubResource("StandardMaterial3D_wcrr6")

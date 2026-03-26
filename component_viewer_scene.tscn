@@ -1,0 +1,45 @@
+[gd_scene format=3 uid="uid://cny2g8v4pvbtm"]
+
+[ext_resource type="Script" uid="uid://g1xgdbak143c" path="res://component_viewer_scene.gd" id="1_tj56o"]
+[ext_resource type="PackedScene" uid="uid://dcv1nxym1h5ru" path="res://BoxItem.tscn" id="2_68jww"]
+[ext_resource type="Script" uid="uid://e3f1ox6y6cvg" path="res://addons/Gizmo3DScript/gizmo3D.gd" id="2_tj56o"]
+[ext_resource type="Script" uid="uid://dfy584nvomyx0" path="res://camera_3d.gd" id="3_suixk"]
+[ext_resource type="Script" uid="uid://bildj6s82twyl" path="res://project_ipc_bridge.gd" id="4_appipc"]
+
+[sub_resource type="Environment" id="Environment_a1r8d"]
+ambient_light_source = 2
+ambient_light_color = Color(0.6955032, 0.6955031, 0.6955031, 1)
+ambient_light_energy = 2.8
+
+[node name="Main" type="Node3D" unique_id=1800062196]
+script = ExtResource("1_tj56o")
+box_scene = ExtResource("2_68jww")
+default_box_scale = Vector3(0.05, 0.05, 0.05)
+switch_to_select_after_add = true
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=419025487]
+transform = Transform3D(0.7071068, -0.22787626, 0.6693821, 0, 0.9466493, 0.32226568, -0.7071068, -0.22787626, 0.6693821, 2.2194614, 2, 3.0288033)
+current = true
+fov = 57.9
+script = ExtResource("3_suixk")
+
+[node name="Gizmo3D" type="Node3D" parent="." unique_id=1159400894]
+script = ExtResource("2_tj56o")
+metadata/_custom_type_script = "uid://e3f1ox6y6cvg"
+
+[node name="BoxContainer" type="Node3D" parent="." unique_id=1650702417]
+
+[node name="ProjectIPCBridge" type="Node" parent="." unique_id=169004001]
+script = ExtResource("4_appipc")
+enabled = true
+
+[node name="World" type="Node3D" parent="." unique_id=208190720]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1417396609]
+environment = SubResource("Environment_a1r8d")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment" unique_id=1903360147]
+transform = Transform3D(0.6045991, -0.44541386, 0.66035324, 0, 0.8290376, 0.5591929, -0.7965299, -0.33808753, 0.5012354, 2.3752694, 4.0376387, 1.3237966)
+
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="WorldEnvironment" unique_id=1278790680]
+transform = Transform3D(0.07425449, 0.8488603, -0.52337605, -0.4451321, 0.4978532, 0.7443115, 0.8923809, 0.177703, 0.41482285, -11.491698, 1.0016208, -1.2697183)

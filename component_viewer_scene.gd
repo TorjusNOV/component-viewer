@@ -498,10 +498,11 @@ func _on_ipc_request_received(method: String, params: Dictionary, correlation_id
 				ipc_bridge.send_error(correlation_id, "invalid_request", "Missing box_transform")
 				return
 
-			var box_transform := _parse_transform_param(params.get("box_transform", {}))
-			if box_transform == null:
+			var box_transform_value: Variant = _parse_transform_param(params.get("box_transform", {}))
+			if box_transform_value == null:
 				ipc_bridge.send_error(correlation_id, "invalid_request", "Invalid box_transform")
 				return
+			var box_transform: Dictionary = box_transform_value
 
 			var camera_transform: Variant = null
 			if params.has("camera_transform"):
@@ -544,10 +545,11 @@ func _on_ipc_request_received(method: String, params: Dictionary, correlation_id
 				ipc_bridge.send_error(correlation_id, "invalid_request", "Missing box_transform")
 				return
 
-			var selected_box_transform := _parse_transform_param(params.get("box_transform", {}))
-			if selected_box_transform == null:
+			var selected_box_transform_value: Variant = _parse_transform_param(params.get("box_transform", {}))
+			if selected_box_transform_value == null:
 				ipc_bridge.send_error(correlation_id, "invalid_request", "Invalid box_transform")
 				return
+			var selected_box_transform: Dictionary = selected_box_transform_value
 
 			_apply_box_transform(selected_box, selected_box_transform)
 			_emit_selected_box_transform("ipc")
@@ -564,10 +566,11 @@ func _on_ipc_request_received(method: String, params: Dictionary, correlation_id
 				ipc_bridge.send_error(correlation_id, "invalid_request", "Missing camera_transform")
 				return
 
-			var target_camera_transform := _parse_transform_param(params.get("camera_transform", {}))
-			if target_camera_transform == null:
+			var target_camera_transform_value: Variant = _parse_transform_param(params.get("camera_transform", {}))
+			if target_camera_transform_value == null:
 				ipc_bridge.send_error(correlation_id, "invalid_request", "Invalid camera_transform")
 				return
+			var target_camera_transform: Dictionary = target_camera_transform_value
 
 			var transition_sec: float = default_view_transition_sec
 			if params.has("transition_sec"):

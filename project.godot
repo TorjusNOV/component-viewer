@@ -17,6 +17,15 @@ boot_splash/bg_color=Color(1, 1, 1, 1)
 boot_splash/show_image=false
 config/icon="res://icon.svg"
 
+[blenderkit]
+
+materials/api_key=""
+materials/resolution="resolution_2K"
+materials/model_format="gltf_godot"
+materials/assets_path="user://blenderkit_downloads"
+materials/search_free_only=true
+materials/assets_path_migrated_to_user=true
+
 [display]
 
 window/size/mode=1
@@ -123,5 +132,4 @@ apply_box_view={
 [rendering]
 
 rendering_device/driver.windows="d3d12"
-renderer/rendering_method="mobile"
 environment/defaults/default_clear_color=Color(0.9490196, 0.9490196, 0.9490196, 1)

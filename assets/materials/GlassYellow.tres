@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://diuhx6rg0ynd0"]
+
+[resource]
+resource_name = "GlassYellow"
+transparency = 1
+albedo_color = Color(0.98, 0.83, 0.18, 0.25)
+metallic = 0.0
+metallic_specular = 0.9
+roughness = 0.03

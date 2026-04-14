@@ -1,0 +1,14 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://kugrtpwqoebc"]
+
+[ext_resource type="Texture2D" uid="uid://cqlebsaogvl62" path="res://assets/textures/nov_materials/MaPZone[Galvanized_diffuse].bmp" id="1_metalgalv"]
+[ext_resource type="Texture2D" uid="uid://dlouya0jfa667" path="res://assets/textures/nov_materials/MaPZone[Rusty_Iron_nov_yellow_normal].png" id="2_metalgalv"]
+
+[resource]
+resource_name = "MetalGalvanized"
+albedo_texture = ExtResource("1_metalgalv")
+metallic = 1.0
+metallic_specular = 0.73
+roughness = 0.76
+normal_enabled = true
+normal_scale = 0.17
+normal_texture = ExtResource("2_metalgalv")

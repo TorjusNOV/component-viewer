@@ -1,0 +1,12 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://ckf4440ax7kua"]
+
+[ext_resource type="Texture2D" uid="uid://dh7rrmdxx3hgd" path="res://assets/textures/nov_materials/Metal_Floor_11_diffuse.png" id="1_floor11"]
+[ext_resource type="Texture2D" uid="uid://dtwoawt5n7fqb" path="res://assets/textures/nov_materials/Metal_Floor_11_normal.png" id="2_floor11"]
+
+[resource]
+resource_name = "MetalFloor11"
+albedo_texture = ExtResource("1_floor11")
+metallic = 0.9
+roughness = 0.42
+normal_enabled = true
+normal_texture = ExtResource("2_floor11")

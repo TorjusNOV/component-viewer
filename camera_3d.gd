@@ -9,6 +9,7 @@ class_name EditorCamera
 @export var touch_look_sensitivity: float = 0.0035
 @export var touch_pan_sensitivity: float = 0.01
 @export var touch_zoom_sensitivity: float = 0.01
+@export var max_angular_speed_deg: float = 180.0
 
 var yaw: float = 0.0
 var pitch: float = 0.0
@@ -17,6 +18,10 @@ var _view_tween: Tween = null
 var _touch_points: Dictionary = {}
 var _prev_touch_center: Vector2 = Vector2.ZERO
 var _prev_touch_distance: float = -1.0
+var _view_start_position: Vector3 = Vector3.ZERO
+var _view_target_position: Vector3 = Vector3.ZERO
+var _view_start_quat: Quaternion = Quaternion.IDENTITY
+var _view_target_quat: Quaternion = Quaternion.IDENTITY
 
 func _ready() -> void:
 	pitch = rotation.x
@@ -148,19 +153,43 @@ func set_view(position_value: Vector3, rotation_value: Vector3, transition_sec: 
 	if transition_sec <= 0.0:
 		global_position = position_value
 		global_rotation = rotation_value
-		pitch = rotation_value.x
-		yaw = rotation_value.y
+		_sync_look_from_current_rotation()
 		return
+
+	_view_start_position = global_position
+	_view_target_position = position_value
+	_view_start_quat = Quaternion(global_transform.basis).normalized()
+	_view_target_quat = Quaternion(Basis.from_euler(rotation_value)).normalized()
+
+	var effective_transition_sec: float = transition_sec
+	if max_angular_speed_deg > 0.0:
+		var angle_rad: float = _view_start_quat.angle_to(_view_target_quat)
+		var max_angular_speed_rad: float = deg_to_rad(max_angular_speed_deg)
+		if max_angular_speed_rad > 0.0:
+			var min_transition_sec: float = angle_rad / max_angular_speed_rad
+			effective_transition_sec = max(effective_transition_sec, min_transition_sec)
 
 	_view_tween = create_tween()
 	_view_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_view_tween.parallel().tween_property(self, "global_position", position_value, transition_sec)
-	_view_tween.parallel().tween_property(self, "global_rotation", rotation_value, transition_sec)
+	_view_tween.tween_method(_set_view_interpolation_weight, 0.0, 1.0, effective_transition_sec)
 	_view_tween.finished.connect(_on_view_tween_finished.bind(position_value, rotation_value), CONNECT_ONE_SHOT)
 
 func _on_view_tween_finished(position_value: Vector3, rotation_value: Vector3) -> void:
 	global_position = position_value
 	global_rotation = rotation_value
-	pitch = rotation_value.x
-	yaw = rotation_value.y
+	_sync_look_from_current_rotation()
 	_view_tween = null
+
+func _set_view_interpolation_weight(weight: float) -> void:
+	var clamped_weight: float = clamp(weight, 0.0, 1.0)
+	var interpolated_position: Vector3 = _view_start_position.lerp(_view_target_position, clamped_weight)
+	var interpolated_quat: Quaternion = _view_start_quat.slerp(_view_target_quat, clamped_weight)
+
+	var t: Transform3D = global_transform
+	t.origin = interpolated_position
+	t.basis = Basis(interpolated_quat)
+	global_transform = t
+
+func _sync_look_from_current_rotation() -> void:
+	pitch = rotation.x
+	yaw = rotation.y

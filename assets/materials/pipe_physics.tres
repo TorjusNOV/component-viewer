@@ -1,0 +1,6 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://bghvaa1k3op05"]
+
+[resource]
+resource_name = "pipe_physics"
+albedo_color = Color(0.956863, 0.376471, 0.811765, 1)
+roughness = 0.95

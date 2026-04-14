@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://ckfe4cx2kd836"]
+
+[ext_resource type="Texture2D" uid="uid://dne6frmlxvfft" path="res://assets/textures/nov_materials/National_Oilwell_Varco_Logo_Color_RGB.png" id="1_novlogo"]
+
+[resource]
+resource_name = "NovLogo"
+transparency = 1
+albedo_texture = ExtResource("1_novlogo")
+roughness = 0.4

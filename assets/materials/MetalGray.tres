@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://cclkr3kmmbbaw"]
+
+[resource]
+resource_name = "MetalGray"
+albedo_color = Color(0.55, 0.56, 0.57, 1)
+metallic = 0.9
+metallic_specular = 0.5
+roughness = 0.45

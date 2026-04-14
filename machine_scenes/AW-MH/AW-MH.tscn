@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://dk8jpijme1gm3"]
+
+[ext_resource type="PackedScene" uid="uid://ctdowvytmxl1f" path="res://machine_scenes/AW-MH/Mousehole.static.glb" id="1_jkjga"]
+
+[node name="Mousehole" unique_id=340919809 instance=ExtResource("1_jkjga")]

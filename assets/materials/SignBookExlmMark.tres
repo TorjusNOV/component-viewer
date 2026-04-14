@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://b1w8cranuqa0t"]
+
+[ext_resource type="Texture2D" uid="uid://clkpwulhps8f4" path="res://assets/textures/nov_materials/49568.png" id="1_signexlm"]
+
+[resource]
+resource_name = "SignBookExlmMark"
+transparency = 1
+albedo_texture = ExtResource("1_signexlm")
+roughness = 0.6

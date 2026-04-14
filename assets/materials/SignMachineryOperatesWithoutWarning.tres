@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://lkn468nhp3s5"]
+
+[ext_resource type="Texture2D" uid="uid://b8jljvilqj8x6" path="res://assets/textures/nov_materials/49569.png" id="1_signmach"]
+
+[resource]
+resource_name = "SignMachineryOperatesWithoutWarning"
+transparency = 1
+albedo_texture = ExtResource("1_signmach")
+roughness = 0.6

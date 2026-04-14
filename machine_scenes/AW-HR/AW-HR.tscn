@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://bcfdkpur3xf28"]
+
+[ext_resource type="PackedScene" uid="uid://b5v1m7v48eijq" path="res://machine_scenes/AW-HR/HydraRackerAux.static.glb" id="1_rfa16"]
+
+[node name="HydraRackerAux" unique_id=2063848703 instance=ExtResource("1_rfa16")]

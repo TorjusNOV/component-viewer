@@ -1,0 +1,11 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://pkbj4l3jswby"]
+
+[ext_resource type="Texture2D" uid="uid://d3chxq1vh01wc" path="res://assets/textures/nov_materials/metal_rusty_normals.png" id="1_metalgrayshiny"]
+
+[resource]
+resource_name = "MetalGrayShiny"
+albedo_color = Color(0.58, 0.59, 0.6, 1)
+metallic = 0.9
+roughness = 0.2
+normal_enabled = true
+normal_texture = ExtResource("1_metalgrayshiny")

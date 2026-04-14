@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://48783k3a5d0l"]
+
+[ext_resource type="Texture2D" uid="uid://d00seuhfw3w8x" path="res://assets/textures/nov_materials/49571.png" id="1_signhand"]
+
+[resource]
+resource_name = "SignBookHand"
+transparency = 1
+albedo_texture = ExtResource("1_signhand")
+roughness = 0.6

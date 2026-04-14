@@ -1,0 +1,11 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://cnloj4jtf2kdt"]
+
+[ext_resource type="Texture2D" uid="uid://deq8mkeek58h5" path="res://assets/textures/nov_materials/MaPZone[Concrete_normal].bmp" id="1_metalblue"]
+
+[resource]
+resource_name = "MetalBlue"
+albedo_color = Color(0.192157, 0.227451, 0.694118, 1)
+metallic = 0.9
+roughness = 0.32
+normal_enabled = true
+normal_texture = ExtResource("1_metalblue")

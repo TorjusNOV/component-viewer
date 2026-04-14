@@ -1,0 +1,14 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://blq7cyohohsce"]
+
+[ext_resource type="Texture2D" uid="uid://boakvqtfpudpi" path="res://assets/textures/nov_materials/yellow_metal.bmp" id="1_hi20x"]
+[ext_resource type="Texture2D" uid="uid://deq8mkeek58h5" path="res://assets/textures/nov_materials/MaPZone[Concrete_normal].bmp" id="2_fanoq"]
+
+[resource]
+resource_name = "MetalYellow"
+albedo_texture = ExtResource("1_hi20x")
+metallic = 0.03
+metallic_specular = 0.4
+roughness = 0.6
+normal_enabled = true
+normal_scale = 0.22
+normal_texture = ExtResource("2_fanoq")

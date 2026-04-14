@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://b7dy0c7fa6oeg"]
+
+[resource]
+resource_name = "NoMaterial"
+albedo_color = Color(0.7, 0.7, 0.7, 1)
+metallic = 0.0
+roughness = 0.9

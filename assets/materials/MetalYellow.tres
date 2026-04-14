@@ -1,0 +1,20 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://b22wkc4m6ed3i"]
+
+[ext_resource type="Texture2D" uid="uid://cwmtymormiewx" path="res://assets/textures/untitled_metal02_diffuse.jpg" id="1_ujumt"]
+[ext_resource type="Texture2D" uid="uid://1ffhgxcwvuog" path="res://assets/textures/untitled_metal_metallic-metal_glossiness.png" id="2_nnsb5"]
+[ext_resource type="Texture2D" uid="uid://dkgmve71b6yfq" path="res://assets/textures/untitled_metal_normal_opengl.jpg" id="3_8hd1g"]
+
+[resource]
+resource_name = "Yellow painted metal"
+cull_mode = 2
+albedo_color = Color(1, 0.73333335, 0.11372549, 1)
+albedo_texture = ExtResource("1_ujumt")
+metallic = 1.0
+metallic_texture = ExtResource("2_nnsb5")
+metallic_texture_channel = 2
+roughness = 0.59
+roughness_texture = ExtResource("2_nnsb5")
+roughness_texture_channel = 1
+normal_enabled = true
+normal_scale = 2.16
+normal_texture = ExtResource("3_8hd1g")

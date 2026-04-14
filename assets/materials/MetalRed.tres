@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://cpdysyauocppj"]
+
+[resource]
+resource_name = "MetalRed"
+albedo_color = Color(0.75, 0.08, 0.08, 1)
+metallic = 0.85
+metallic_specular = 0.5
+roughness = 0.28

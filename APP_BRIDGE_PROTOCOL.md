@@ -257,7 +257,7 @@ Behavior:
 - Machine name matching is case-insensitive against folders under `res://machine_scenes`.
 - Replaces children under `World` with the loaded machine scene.
 - Clears all currently shown boxes before showing content for the new machine.
-- If `machine_name` is omitted (empty params), current machine scene is unloaded.
+- If `machine_name` is omitted (empty params), current machine scene is unloaded (backward-compatible behavior).
 
 Success result (`app_response.payload.result`):
 
@@ -301,6 +301,37 @@ Unload example (no params):
 }
 ```
 
+#### 1a) `unload_machine`
+
+Unloads the currently loaded machine scene, if any.
+
+`payload.params`: none required.
+
+Behavior:
+
+- Removes current machine children under `World`.
+- Clears currently shown boxes.
+- If no machine is currently loaded, this is a no-op.
+
+Success result (`app_response.payload.result`):
+
+- Current project state snapshot (same shape as `get_state`).
+
+Example:
+
+```json
+{
+  "type": "app_request",
+  "route": "component-viewer",
+  "correlation_id": "36e4f383-a9cc-4ee7-a895-747f105bc2ef",
+  "method": "unload_machine",
+  "payload": {
+    "schema_version": 1,
+    "params": {}
+  }
+}
+```
+
 #### 2) `show_box`
 
 Shows a box from an explicit transform payload and applies a camera transform.
@@ -316,6 +347,7 @@ Shows a box from an explicit transform payload and applies a camera transform.
   - `rotation`: `{x,y,z}`
 - `move_camera` (bool, optional, default `true`)
 - `replace_existing` (bool, optional, default `true` when single-box mode is enabled)
+- `boxId` (string, optional): caller-defined identifier for the shown box
 - `color` (optional): box color override; transparency is preserved
 
 Accepted `color` formats:
@@ -330,6 +362,7 @@ Behavior:
 - `replace_existing=false` is supported to keep multi-box workflows compatible.
 - If `color` is provided, selected box color changes to that color while keeping existing transparency.
 - If `color` is not provided, selected box uses the default green color.
+- If `boxId` is provided, it is stored on the created box and can be used later with `hide_box`.
 - The shown box runs a 3-second fade pulse for attention (in display mode).
 - If `move_camera` is true and `camera_transform` is provided, camera glides to `camera_transform`.
 - If `camera_transform` is omitted, camera remains at current transform.
@@ -366,6 +399,7 @@ Example:
       },
       "move_camera": true,
       "replace_existing": true,
+      "boxId": "feeder_A_01",
       "color": "#FF6A00"
     }
   }
@@ -491,6 +525,40 @@ Example:
   "payload": {
     "schema_version": 1,
     "params": {}
+  }
+}
+```
+
+#### 2da) `hide_box`
+
+Removes a currently shown box by id.
+
+`payload.params`:
+
+- `boxId` (required, string)
+
+Success result (`app_response.payload.result`):
+
+- Current project state snapshot
+
+Errors (`app_error.payload.error.code`):
+
+- `invalid_request` when `boxId` is missing.
+- `not_found` when no shown box matches `boxId`.
+
+Example:
+
+```json
+{
+  "type": "app_request",
+  "route": "component-viewer",
+  "correlation_id": "099132d2-f8f1-44b1-8d13-78b78675af91",
+  "method": "hide_box",
+  "payload": {
+    "schema_version": 1,
+    "params": {
+      "boxId": "13"
+    }
   }
 }
 ```
@@ -630,7 +698,7 @@ The project emits `app_event` frames with the following behavior:
 
 - `viewer_ready`: Sent when the IPC bridge connects and the project is ready to serve app requests.
 - `machine_loaded`: Sent after `load_machine` succeeds.
-- `machine_unloaded`: Sent when `load_machine` is called without `machine_name` and the active machine is unloaded.
+- `machine_unloaded`: Sent when `unload_machine` succeeds, or when `load_machine` is called without `machine_name` and an active machine is unloaded.
 - `display_box_changed`: Sent after display target box changes (for example via `show_box`).
 - `box_deleted`: Sent when a box is deleted (Delete key or IPC deletion path).
 - `boxes_hidden`: Sent when all boxes are removed via `hide_boxes` (or internal hide-all flow).

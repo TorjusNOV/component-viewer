@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://dsbobmgjr6y0q"]
+
+[ext_resource type="Texture2D" uid="uid://dvcm0p6a4cn4t" path="res://assets/textures/nov_materials/mccoy_kt14.png" id="1_mccoy"]
+
+[resource]
+resource_name = "Logo_McCoyKT14"
+transparency = 1
+albedo_texture = ExtResource("1_mccoy")
+roughness = 0.45

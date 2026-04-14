@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://xbi3yjovgcw1"]
+
+[resource]
+resource_name = "RubberWhite"
+albedo_color = Color(0.9, 0.9, 0.9, 1)
+metallic = 0.0
+metallic_specular = 0.2
+roughness = 0.88

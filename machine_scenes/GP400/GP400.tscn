@@ -1,7 +1,7 @@
-[gd_scene format=3 uid="uid://c2fojedexojpl"]
+[gd_scene format=3 uid="uid://b7mtkke0cf1nb"]
 
-[ext_resource type="Material" uid="uid://dsup4jgtkmrj7" path="res://machine_scenes/GP400/gp_400_main_material.tres" id="1_auygc"]
-[ext_resource type="PackedScene" uid="uid://fedkjlnk2403" path="res://machine_scenes/GP400/GP400.glb" id="3_onymc"]
+[ext_resource type="PackedScene" uid="uid://fedkjlnk2403" path="res://machine_scenes/GP400/GP400.glb" id="1_krk1r"]
+[ext_resource type="Material" uid="uid://dsup4jgtkmrj7" path="res://machine_scenes/GP400/gp_400_main_material.tres" id="2_6vuu7"]
 
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_lht2a"]
 points = PackedVector3Array(-0.40357125, -0.007888891, -0.37548888, -0.40357125, -0.007888891, 0.36605427, 0.40098894, -0.007888891, -0.37548888, -0.5612919, 0.071, -0.1545753, 0.40098894, 0.055208325, -0.37548888, 0.40098894, -0.007888891, 0.36605427, -0.38771158, 0.055208325, 0.3818444, 0.385032, 0.055208325, 0.3818444, -0.38771158, 0.055208325, -0.37548888, -0.5612919, 0.0078950655, 0.1451407, 0.27326044, 0.06925425, -0.08722824, -0.54444337, 0.06957166, 0.14, 0.046293672, 0.06901654, -0.281467, -0.5612919, 0.0078950655, -0.1545753, -0.38771158, -0.007888891, 0.3818444, 0.40098894, 0.055208325, 0.36605427, 0.385032, -0.007888891, 0.3818444, 0.27475047, 0.06940637, 0.078867525, -0.01388407, 0.06892261, 0.2871088, 0.12222029, 0.0692025, 0.25916517, -0.5589, 0.06829277, 0.07664067, 0.2268044, 0.06910746, -0.17700078, -0.40357125, 0.039439812, -0.37548888, -0.40357125, 0.055208325, 0.36605427, -0.058776215, 0.068826936, -0.28002638, 0.19479832, 0.06883994, 0.21192357, 0.10627404, 0.069018215, -0.26655334)
@@ -171,10 +171,11 @@ points = PackedVector3Array(-0.15455504, 0.76356435, -0.22218204, 0.11492062, 0.
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_0g4hx"]
 points = PackedVector3Array(0.24064952, 0.9059594, -0.19074963, 0.10706428, 0.81307256, -0.23630968, 0.10706428, 0.81307256, -0.20804127, 0.12121129, 0.91912186, -0.22924447, 0.24848764, 0.830766, -0.25364876, 0.20377275, 0.7931763, -0.18395609, 0.12229552, 0.90009964, -0.18424037, 0.19122984, 0.93279755, -0.25375986, 0.17200305, 0.7918507, -0.254, 0.10706428, 0.8555136, -0.25753573, 0.19123842, 0.932892, -0.18348625, 0.25488806, 0.85621583, -0.18363106, 0.24712498, 0.89368165, -0.25289926, 0.14676522, 0.7990714, -0.18372424, 0.10706428, 0.86256427, -0.18683043, 0.22199878, 0.80063176, -0.24650888, 0.24130276, 0.81866103, -0.1841489, 0.15282352, 0.92665863, -0.25389993, 0.2163229, 0.9255508, -0.25329062, 0.15298311, 0.92633927, -0.18356907, 0.25536582, 0.85617256, -0.25390115, 0.15952724, 0.93221885, -0.21548334, 0.21637617, 0.92565745, -0.18394409, 0.25424138, 0.8814744, -0.20918576, 0.12709923, 0.81765157, -0.18335569, 0.15950954, 0.792861, -0.20281215, 0.10706428, 0.8413666, -0.25753573, 0.20378385, 0.7931356, -0.25335762, 0.12277393, 0.8998126, -0.25278986, 0.25363582, 0.83757085, -0.2155228, 0.14688699, 0.7992744, -0.25345746, 0.10706428, 0.86961496, -0.2504553)
 
-[node name="GP400" unique_id=197586639 instance=ExtResource("3_onymc")]
+[node name="GP400" unique_id=197586639 instance=ExtResource("1_krk1r")]
 
 [node name="GP400_IGS" parent="." index="0" unique_id=1130577187]
-surface_material_override/0 = ExtResource("1_auygc")
+transform = Transform3D(0.9999915, -0.0027898676, -0.0030714422, 0.0027928737, 0.9999958, 0.00093955564, 0.0030687898, -0.00094818394, 0.9999949, 0.0008623299, 8.1270593e-07, 0.000864982)
+surface_material_override/0 = ExtResource("2_6vuu7")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="GP400_IGS" index="0" unique_id=1252731053]
 
@@ -197,7 +198,8 @@ shape = SubResource("ConvexPolygonShape3D_cyl1b")
 shape = SubResource("ConvexPolygonShape3D_cau6m")
 
 [node name="GP400_IGS_001" parent="." index="1" unique_id=1953307455]
-surface_material_override/0 = ExtResource("1_auygc")
+transform = Transform3D(0.9999915, -0.0027898676, -0.0030714422, 0.0027928737, 0.9999958, 0.00093955564, 0.0030687898, -0.00094818394, 0.9999949, 0.0008623299, 8.1270593e-07, 0.000864982)
+surface_material_override/0 = ExtResource("2_6vuu7")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="GP400_IGS_001" index="0" unique_id=531512578]
 
@@ -277,7 +279,8 @@ shape = SubResource("ConvexPolygonShape3D_14865")
 shape = SubResource("ConvexPolygonShape3D_ounw6")
 
 [node name="GP400_IGS_002" parent="." index="2" unique_id=331071743]
-surface_material_override/0 = ExtResource("1_auygc")
+transform = Transform3D(0.9999915, -0.0027898676, -0.0030714422, 0.0027928737, 0.9999958, 0.00093955564, 0.0030687898, -0.00094818394, 0.9999949, 0.0008623299, 8.1270593e-07, 0.000864982)
+surface_material_override/0 = ExtResource("2_6vuu7")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="GP400_IGS_002" index="0" unique_id=2045798300]
 
@@ -309,7 +312,8 @@ shape = SubResource("ConvexPolygonShape3D_oo845")
 shape = SubResource("ConvexPolygonShape3D_xv5q2")
 
 [node name="GP400_IGS_003" parent="." index="3" unique_id=1227164010]
-surface_material_override/0 = ExtResource("1_auygc")
+transform = Transform3D(0.9999915, -0.0027898676, -0.0030714422, 0.0027928737, 0.9999958, 0.00093955564, 0.0030687898, -0.00094818394, 0.9999949, 0.0008623299, 8.1270593e-07, 0.000864982)
+surface_material_override/0 = ExtResource("2_6vuu7")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="GP400_IGS_003" index="0" unique_id=11523776]
 
@@ -320,7 +324,8 @@ shape = SubResource("ConvexPolygonShape3D_nh6f3")
 shape = SubResource("ConvexPolygonShape3D_45prx")
 
 [node name="GP400_IGS_004" parent="." index="4" unique_id=1405647131]
-surface_material_override/0 = ExtResource("1_auygc")
+transform = Transform3D(0.99999124, -0.0027943696, -0.0030672252, 0.002792785, 0.99999624, -0.0005022958, 0.0030687302, 0.0004937093, 0.9999954, 0.000872071, -2.167119e-06, -0.002306618)
+surface_material_override/0 = ExtResource("2_6vuu7")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="GP400_IGS_004" index="0" unique_id=1168381759]
 
@@ -334,7 +339,8 @@ shape = SubResource("ConvexPolygonShape3D_5a0hf")
 shape = SubResource("ConvexPolygonShape3D_6h02r")
 
 [node name="GP400_IGS_005" parent="." index="5" unique_id=1562068779]
-surface_material_override/0 = ExtResource("1_auygc")
+transform = Transform3D(0.99999124, -0.0027943696, -0.0030672252, 0.002792785, 0.99999624, -0.0005022958, 0.0030687302, 0.0004937093, 0.9999954, 0.000872071, -2.167119e-06, -0.002306618)
+surface_material_override/0 = ExtResource("2_6vuu7")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="GP400_IGS_005" index="0" unique_id=2019472581]
 
@@ -347,13 +353,17 @@ shape = SubResource("ConvexPolygonShape3D_i8ty7")
 [node name="CollisionShape3D3" type="CollisionShape3D" parent="GP400_IGS_005/StaticBody3D" index="2" unique_id=1025663163]
 shape = SubResource("ConvexPolygonShape3D_jkfm5")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="GP400_IGS_006" parent_id_path=PackedInt32Array(834568560) index="0" unique_id=566363615]
+[node name="GP400_IGS_006" parent="." index="6" unique_id=834568560]
+transform = Transform3D(0.99999124, -0.0027943696, -0.0030672252, 0.002792785, 0.99999624, -0.0005022958, 0.0030687302, 0.0004937093, 0.9999954, 0.000872071, -2.167119e-06, -0.002306618)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="GP400_IGS_006" index="0" unique_id=566363615]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="GP400_IGS_006/StaticBody3D" index="0" unique_id=911726766]
 shape = SubResource("ConvexPolygonShape3D_d8dim")
 
 [node name="GP400_IGS_007" parent="." index="7" unique_id=1110852820]
-surface_material_override/0 = ExtResource("1_auygc")
+transform = Transform3D(0.9999915, -0.0027898676, -0.0030714422, 0.0027928737, 0.9999958, 0.00093955564, 0.0030687898, -0.00094818394, 0.9999949, 0.0008623299, 8.1270593e-07, 0.000864982)
+surface_material_override/0 = ExtResource("2_6vuu7")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="GP400_IGS_007" index="0" unique_id=850031691]
 
@@ -367,7 +377,8 @@ shape = SubResource("ConvexPolygonShape3D_xq30e")
 shape = SubResource("ConvexPolygonShape3D_p3qhm")
 
 [node name="GP400_IGS_008" parent="." index="8" unique_id=2022727398]
-surface_material_override/0 = ExtResource("1_auygc")
+transform = Transform3D(0.9999915, -0.0027898676, -0.0030714422, 0.0027928737, 0.9999958, 0.00093955564, 0.0030687898, -0.00094818394, 0.9999949, 0.0008623299, 8.1270593e-07, 0.000864982)
+surface_material_override/0 = ExtResource("2_6vuu7")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="GP400_IGS_008" index="0" unique_id=1536173655]
 
@@ -375,7 +386,8 @@ surface_material_override/0 = ExtResource("1_auygc")
 shape = SubResource("ConvexPolygonShape3D_nikvm")
 
 [node name="GP400_IGS_009" parent="." index="9" unique_id=1159668437]
-surface_material_override/0 = ExtResource("1_auygc")
+transform = Transform3D(0.9999915, -0.0027898676, -0.0030714422, 0.0027928737, 0.9999958, 0.00093955564, 0.0030687898, -0.00094818394, 0.9999949, 0.0008623299, 8.1270593e-07, 0.000864982)
+surface_material_override/0 = ExtResource("2_6vuu7")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="GP400_IGS_009" index="0" unique_id=723665817]
 
@@ -383,7 +395,8 @@ surface_material_override/0 = ExtResource("1_auygc")
 shape = SubResource("ConvexPolygonShape3D_kk7d1")
 
 [node name="GP400_IGS_010" parent="." index="10" unique_id=1634787514]
-surface_material_override/0 = ExtResource("1_auygc")
+transform = Transform3D(0.9999915, -0.0027898676, -0.0030714422, 0.0027928737, 0.9999958, 0.00093955564, 0.0030687898, -0.00094818394, 0.9999949, 0.0008623299, 8.1270593e-07, 0.000864982)
+surface_material_override/0 = ExtResource("2_6vuu7")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="GP400_IGS_010" index="0" unique_id=613937140]
 

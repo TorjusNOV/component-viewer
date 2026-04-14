@@ -1,5 +1,7 @@
 extends Node3D
 
+const BOX_ID_META_KEY: StringName = &"box_id"
+
 enum EditorSubMode {
 	SELECT,
 	ADD
@@ -34,6 +36,8 @@ var display_box_index: int = -1
 var current_machine_scene_path: String = ""
 var current_machine_name: String = ""
 var _gizmo_transform_pending_emit: bool = false
+var _default_camera_position: Vector3 = Vector3.ZERO
+var _default_camera_rotation: Vector3 = Vector3.ZERO
 
 func _ready() -> void:
 	_debug("=== MAIN READY ===")
@@ -46,6 +50,8 @@ func _ready() -> void:
 		push_error("BoxContainer node not found at $BoxContainer")
 	if box_scene == null:
 		_debug("WARNING: box_scene is not assigned in the Inspector")
+
+	_cache_default_camera_view()
 
 	_update_camera_navigation_enabled()
 
@@ -61,6 +67,17 @@ func _ready() -> void:
 	if ipc_bridge != null:
 		ipc_bridge.request_received.connect(_on_ipc_request_received)
 		ipc_bridge.bridge_connected.connect(_on_ipc_bridge_connected)
+
+func _cache_default_camera_view() -> void:
+	if camera == null:
+		return
+	_default_camera_position = camera.global_position
+	_default_camera_rotation = camera.global_rotation
+
+func _reset_camera_to_default_view(transition_sec: float = 0.0) -> void:
+	if camera == null:
+		return
+	camera.set_view(_default_camera_position, _default_camera_rotation, max(transition_sec, 0.0))
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_editor_mode"):
@@ -347,6 +364,7 @@ func load_machine(machine_name: String) -> int:
 		return ERR_CANT_CREATE
 
 	world_root.add_child(machine_instance)
+	_reset_camera_to_default_view(0.0)
 	current_machine_name = resolved_machine_name
 	current_machine_scene_path = normalized_scene_path
 
@@ -361,6 +379,9 @@ func load_machine(machine_name: String) -> int:
 	return OK
 
 func unload_machine() -> void:
+	if current_machine_name == "" and current_machine_scene_path == "":
+		return
+
 	var previous_machine_name: String = current_machine_name
 	var previous_scene_path: String = current_machine_scene_path
 
@@ -493,6 +514,9 @@ func _on_ipc_request_received(method: String, params: Dictionary, correlation_id
 				return
 
 			ipc_bridge.send_response(correlation_id, _build_state_snapshot())
+		"unload_machine":
+			unload_machine()
+			ipc_bridge.send_response(correlation_id, _build_state_snapshot())
 		"show_box":
 			if !params.has("box_transform"):
 				ipc_bridge.send_error(correlation_id, "invalid_request", "Missing box_transform")
@@ -513,6 +537,7 @@ func _on_ipc_request_received(method: String, params: Dictionary, correlation_id
 
 			var replace_existing: bool = bool(params.get("replace_existing", display_single_box_only))
 			var move_camera: bool = bool(params.get("move_camera", true))
+			var box_id: String = str(params.get("boxId", params.get("box_id", ""))).strip_edges()
 			var highlight_color: Variant = null
 			if params.has("color"):
 				highlight_color = _parse_color_param(params.get("color", null))
@@ -522,12 +547,27 @@ func _on_ipc_request_received(method: String, params: Dictionary, correlation_id
 					})
 					return
 
-			var show_result: int = _show_box_from_transform(box_transform, camera_transform, move_camera, highlight_color, replace_existing)
+			var show_result: int = _show_box_from_transform(box_transform, camera_transform, move_camera, highlight_color, replace_existing, box_id)
 			if show_result != OK:
 				ipc_bridge.send_error(correlation_id, "invalid_request", "Unable to show box", {
 					"error_code": show_result
 				})
 				return
+			ipc_bridge.send_response(correlation_id, _build_state_snapshot())
+		"hide_box":
+			var hide_box_id: String = str(params.get("boxId", params.get("box_id", ""))).strip_edges()
+			if hide_box_id == "":
+				ipc_bridge.send_error(correlation_id, "invalid_request", "Missing boxId")
+				return
+
+			var box_by_id: BoxItem = _get_box_by_id(hide_box_id)
+			if box_by_id == null:
+				ipc_bridge.send_error(correlation_id, "not_found", "No box with matching boxId is currently shown", {
+					"boxId": hide_box_id
+				})
+				return
+
+			_delete_box(box_by_id, "ipc_hide_box")
 			ipc_bridge.send_response(correlation_id, _build_state_snapshot())
 		"get_box_transform":
 			var current_box: BoxItem = _get_current_display_box()
@@ -683,6 +723,8 @@ func _delete_box(box: BoxItem, source: String = "unknown") -> bool:
 	if deleted_index < 0:
 		return false
 
+	var deleted_box_id: String = _get_box_id(box)
+
 	if box == selected_box:
 		_clear_selection()
 
@@ -690,6 +732,7 @@ func _delete_box(box: BoxItem, source: String = "unknown") -> bool:
 
 	_emit_bridge_event("box_deleted", {
 		"deleted_box_index": deleted_index,
+		"box_id": deleted_box_id,
 		"remaining_box_count": max(_get_box_count() - 1, 0),
 		"source": source
 	})
@@ -834,7 +877,7 @@ func _parse_transform_param(value: Variant) -> Variant:
 
 	return result
 
-func _show_box_from_transform(box_transform: Dictionary, camera_transform: Variant, move_camera: bool, highlight_color: Variant, replace_existing: bool) -> int:
+func _show_box_from_transform(box_transform: Dictionary, camera_transform: Variant, move_camera: bool, highlight_color: Variant, replace_existing: bool, box_id: String = "") -> int:
 	if box_scene == null:
 		return ERR_CANT_CREATE
 
@@ -848,6 +891,8 @@ func _show_box_from_transform(box_transform: Dictionary, camera_transform: Varia
 
 	box_container.add_child(box)
 	_apply_box_transform(box, box_transform)
+	if box_id != "":
+		box.set_meta(BOX_ID_META_KEY, box_id)
 
 	if highlight_color != null:
 		box.set_box_color(highlight_color as Color)
@@ -872,6 +917,25 @@ func _show_box_from_transform(box_transform: Dictionary, camera_transform: Varia
 	})
 
 	return OK
+
+func _get_box_by_id(box_id: String) -> BoxItem:
+	if box_id == "":
+		return null
+
+	for child in box_container.get_children():
+		if child is BoxItem:
+			var box := child as BoxItem
+			if _get_box_id(box) == box_id:
+				return box
+
+	return null
+
+func _get_box_id(box: BoxItem) -> String:
+	if box == null:
+		return ""
+	if !box.has_meta(BOX_ID_META_KEY):
+		return ""
+	return str(box.get_meta(BOX_ID_META_KEY, ""))
 
 func _get_current_display_box() -> BoxItem:
 	if display_box_index >= 0:

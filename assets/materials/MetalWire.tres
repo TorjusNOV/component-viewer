@@ -1,0 +1,12 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://b1x5qoeysw78i"]
+
+[ext_resource type="Texture2D" uid="uid://hyqaqy6rqef7" path="res://assets/textures/nov_materials/rope_steel5.png" id="1_metalwire"]
+[ext_resource type="Texture2D" uid="uid://bbnycp1sjmnxb" path="res://assets/textures/nov_materials/rope_fabric_normal.png" id="2_metalwire"]
+
+[resource]
+resource_name = "MetalWire"
+albedo_texture = ExtResource("1_metalwire")
+metallic = 0.9
+roughness = 0.35
+normal_enabled = true
+normal_texture = ExtResource("2_metalwire")

@@ -8,8 +8,8 @@
 
 [sub_resource type="Environment" id="Environment_a1r8d"]
 ambient_light_source = 2
-ambient_light_color = Color(0.6955032, 0.6955031, 0.6955031, 1)
-ambient_light_energy = 2.8
+ambient_light_color = Color(1, 1, 1, 1)
+ambient_light_energy = 0.45
 
 [node name="Main" type="Node3D" unique_id=1800062196]
 script = ExtResource("1_tj56o")
@@ -40,6 +40,10 @@ environment = SubResource("Environment_a1r8d")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment" unique_id=1903360147]
 transform = Transform3D(0.6045991, -0.44541386, 0.66035324, 0, 0.8290376, 0.5591929, -0.7965299, -0.33808753, 0.5012354, 2.3752694, 4.0376387, 1.3237966)
+light_energy = 1.15
+shadow_enabled = true
 
 [node name="DirectionalLight3D2" type="DirectionalLight3D" parent="WorldEnvironment" unique_id=1278790680]
 transform = Transform3D(0.07425449, 0.8488603, -0.52337605, -0.4451321, 0.4978532, 0.7443115, 0.8923809, 0.177703, 0.41482285, -11.491698, 1.0016208, -1.2697183)
+visible = true
+light_energy = 0.28

@@ -1,6 +1,11 @@
 extends Node3D
 
 const BOX_ID_META_KEY: StringName = &"box_id"
+const BOX_COLOR_META_KEY: StringName = &"box_color_override"
+const COLLISION_LAYER_META_KEY: StringName = &"original_collision_layer"
+const COLLISION_MASK_META_KEY: StringName = &"original_collision_mask"
+const COLLISION_DISABLED_META_KEY: StringName = &"original_collision_disabled"
+const COLLISION_VISIBLE_META_KEY: StringName = &"original_collision_visible"
 
 enum EditorSubMode {
 	SELECT,
@@ -35,6 +40,7 @@ var selected_box: BoxItem = null
 var display_box_index: int = -1
 var current_machine_scene_path: String = ""
 var current_machine_name: String = ""
+var current_tool_name: String = ""
 var _gizmo_transform_pending_emit: bool = false
 var _default_camera_position: Vector3 = Vector3.ZERO
 var _default_camera_rotation: Vector3 = Vector3.ZERO
@@ -63,6 +69,7 @@ func _ready() -> void:
 
 	_apply_gizmo_tool_mode()
 	_refresh_display_mode_boxes()
+	_update_collision_runtime_state()
 
 	if ipc_bridge != null:
 		ipc_bridge.request_received.connect(_on_ipc_request_received)
@@ -157,6 +164,7 @@ func set_editor_mode(enabled_value: bool) -> void:
 		gizmo.visible = false
 
 	_refresh_display_mode_boxes()
+	_update_collision_runtime_state()
 
 	_emit_bridge_event("editor_mode_changed", {
 		"editor_mode": editor_mode
@@ -333,7 +341,7 @@ func apply_view_from_selected_box() -> void:
 		"selected_box_index": _get_selected_box_index()
 	})
 
-func load_machine(machine_name: String) -> int:
+func load_machine(machine_name: String, reset_camera_to_default: bool = true) -> int:
 	var normalized_machine_name: String = machine_name.strip_edges()
 	if normalized_machine_name == "":
 		return ERR_INVALID_PARAMETER
@@ -364,9 +372,13 @@ func load_machine(machine_name: String) -> int:
 		return ERR_CANT_CREATE
 
 	world_root.add_child(machine_instance)
-	_reset_camera_to_default_view(0.0)
+	_disable_machine_directional_lights(machine_instance)
+	_update_collision_runtime_state()
+	if reset_camera_to_default:
+		_reset_camera_to_default_view(0.0)
 	current_machine_name = resolved_machine_name
 	current_machine_scene_path = normalized_scene_path
+	current_tool_name = ""
 
 	_refresh_display_mode_boxes()
 
@@ -390,6 +402,7 @@ func unload_machine() -> void:
 
 	current_machine_name = ""
 	current_machine_scene_path = ""
+	current_tool_name = ""
 
 	hide_all_boxes("machine_unload")
 
@@ -397,6 +410,98 @@ func unload_machine() -> void:
 		"previous_machine_name": previous_machine_name,
 		"previous_machine_scene_path": previous_scene_path
 	})
+
+func set_tool(tool_name: String) -> int:
+	var normalized_tool_name: String = tool_name.strip_edges()
+	var machine_root: Node = _get_loaded_machine_root()
+	if machine_root == null:
+		return ERR_UNAVAILABLE
+
+	var tools_root: Node3D = _find_tools_root(machine_root)
+	if tools_root == null:
+		if normalized_tool_name == "":
+			current_tool_name = ""
+			_emit_bridge_event("tool_changed", {
+				"tool_name": current_tool_name,
+				"machine_name": current_machine_name
+			})
+			return OK
+		return ERR_DOES_NOT_EXIST
+
+	var resolved_tool_name: String = ""
+	if normalized_tool_name != "":
+		resolved_tool_name = _resolve_tool_name(tools_root, normalized_tool_name)
+		if resolved_tool_name == "":
+			return ERR_INVALID_PARAMETER
+
+	for child in tools_root.get_children():
+		if child is Node:
+			var tool_group: Node = child as Node
+			var show_group: bool = (resolved_tool_name != "" and String(tool_group.name) == resolved_tool_name)
+			_set_mesh_visibility_under_node(tool_group, show_group)
+
+	current_tool_name = resolved_tool_name
+	_emit_bridge_event("tool_changed", {
+		"tool_name": current_tool_name,
+		"machine_name": current_machine_name
+	})
+
+	return OK
+
+func _get_loaded_machine_root() -> Node:
+	if world_root == null:
+		return null
+
+	for child in world_root.get_children():
+		if child is Node and !(child as Node).is_queued_for_deletion():
+			return child as Node
+
+	return null
+
+func _find_tools_root(root: Node) -> Node3D:
+	if root == null:
+		return null
+
+	if root is Node3D:
+		var node_name: String = String((root as Node3D).name).to_lower()
+		if node_name == "tool" or node_name == "tools":
+			return root as Node3D
+
+	for child in root.get_children():
+		if child is Node:
+			var found: Node3D = _find_tools_root(child as Node)
+			if found != null:
+				return found
+
+	return null
+
+func _resolve_tool_name(tools_root: Node3D, requested_tool_name: String) -> String:
+	if tools_root == null:
+		return ""
+
+	var requested_lower: String = requested_tool_name.to_lower()
+	for child in tools_root.get_children():
+		if child is Node:
+			var candidate_name: String = String((child as Node).name)
+			if candidate_name.to_lower() == requested_lower:
+				return candidate_name
+
+	return ""
+
+func _set_mesh_visibility_under_node(root: Node, visible_value: bool) -> void:
+	if root is VisualInstance3D:
+		(root as VisualInstance3D).visible = visible_value
+
+	for child in root.get_children():
+		if child is Node:
+			_set_mesh_visibility_under_node(child as Node, visible_value)
+
+func _disable_machine_directional_lights(root: Node) -> void:
+	if root is DirectionalLight3D:
+		(root as DirectionalLight3D).visible = false
+
+	for child in root.get_children():
+		_disable_machine_directional_lights(child)
 
 func set_display_box(index: int, move_camera: bool = true, highlight_color: Variant = null) -> int:
 	if index < 0:
@@ -414,10 +519,7 @@ func set_display_box(index: int, move_camera: bool = true, highlight_color: Vari
 	display_box_index = index
 	_refresh_display_mode_boxes()
 
-	if highlight_color != null:
-		box.set_box_color(highlight_color as Color)
-	else:
-		box.reset_box_color()
+	_set_box_color_override(box, highlight_color)
 
 	if !editor_mode:
 		box.play_attention_fade(display_attention_duration_sec)
@@ -483,6 +585,13 @@ func _on_ipc_request_received(method: String, params: Dictionary, correlation_id
 			set_editor_mode(!editor_mode)
 			ipc_bridge.send_response(correlation_id, _build_state_snapshot())
 		"load_machine":
+			var load_camera_transform: Variant = null
+			if params.has("camera_transform"):
+				load_camera_transform = _parse_transform_param(params.get("camera_transform", {}))
+				if load_camera_transform == null:
+					ipc_bridge.send_error(correlation_id, "invalid_request", "Invalid camera_transform")
+					return
+
 			var machine_name: String = str(params.get("machine_name", params.get("name", ""))).strip_edges()
 			if machine_name == "":
 				unload_machine()
@@ -492,7 +601,15 @@ func _on_ipc_request_received(method: String, params: Dictionary, correlation_id
 				ipc_bridge.send_error(correlation_id, "invalid_request", "machine_name must not contain path separators")
 				return
 
-			var load_result: int = load_machine(machine_name)
+			if load_camera_transform != null:
+				var camera_transform_for_load: Dictionary = load_camera_transform
+				camera.set_view(
+					camera_transform_for_load.get("position", camera.global_position),
+					camera_transform_for_load.get("rotation", camera.global_rotation),
+					0.0
+				)
+
+			var load_result: int = load_machine(machine_name, load_camera_transform == null)
 			if load_result != OK:
 				var resolved_machine_name: String = _resolve_machine_name(machine_name)
 				var resolved_scene_path: String = _machine_scene_path_from_name(
@@ -516,6 +633,29 @@ func _on_ipc_request_received(method: String, params: Dictionary, correlation_id
 			ipc_bridge.send_response(correlation_id, _build_state_snapshot())
 		"unload_machine":
 			unload_machine()
+			ipc_bridge.send_response(correlation_id, _build_state_snapshot())
+		"set_tool":
+			var requested_tool_name: String = str(params.get("tool_name", params.get("name", ""))).strip_edges()
+			var set_tool_result: int = set_tool(requested_tool_name)
+			if set_tool_result != OK:
+				if set_tool_result == ERR_UNAVAILABLE:
+					ipc_bridge.send_error(correlation_id, "machine_not_loaded", "No machine is currently loaded")
+					return
+				if set_tool_result == ERR_DOES_NOT_EXIST:
+					ipc_bridge.send_error(correlation_id, "tools_not_available", "Current machine does not expose a tool node")
+					return
+				if set_tool_result == ERR_INVALID_PARAMETER:
+					ipc_bridge.send_error(correlation_id, "tool_not_found", "Requested tool name was not found under tool node", {
+						"tool_name": requested_tool_name
+					})
+					return
+
+				ipc_bridge.send_error(correlation_id, "set_tool_failed", "Unable to apply requested tool", {
+					"tool_name": requested_tool_name,
+					"error_code": set_tool_result
+				})
+				return
+
 			ipc_bridge.send_response(correlation_id, _build_state_snapshot())
 		"show_box":
 			if !params.has("box_transform"):
@@ -543,7 +683,7 @@ func _on_ipc_request_received(method: String, params: Dictionary, correlation_id
 				highlight_color = _parse_color_param(params.get("color", null))
 				if highlight_color == null:
 					ipc_bridge.send_error(correlation_id, "invalid_request", "Invalid color format for show_box", {
-						"expected": "Color, '#RRGGBB', '#RRGGBBAA', or {r,g,b} with 0..1 or 0..255 values"
+						"expected": "Color, '#RRGGBB', '#RRGGBBAA', '{123,23,46}', or {r,g,b} with 0..1 or 0..255 values"
 					})
 					return
 
@@ -663,6 +803,7 @@ func _build_state_snapshot() -> Dictionary:
 		"box_count": _get_box_count(),
 		"machine_name": current_machine_name,
 		"machine_scene_path": current_machine_scene_path,
+		"tool_name": current_tool_name,
 		"camera": {
 			"position": _vector3_to_dict(camera.global_position),
 			"rotation": _vector3_to_dict(camera.global_rotation)
@@ -759,18 +900,102 @@ func _emit_bridge_event(event_name: String, data: Variant = null) -> void:
 func _update_camera_navigation_enabled() -> void:
 	camera.enabled = editor_mode or enable_navigation_in_display_mode
 
+func _update_collision_runtime_state() -> void:
+	var collisions_enabled: bool = editor_mode
+	_set_collision_state_for_node(world_root, collisions_enabled)
+	_set_collision_state_for_node(box_container, collisions_enabled)
+
+func _set_collision_state_for_node(root: Node, collisions_enabled: bool) -> void:
+	if root == null:
+		return
+
+	if root is CollisionObject3D:
+		var collision_object: CollisionObject3D = root as CollisionObject3D
+		if collisions_enabled:
+			if collision_object.has_meta(COLLISION_LAYER_META_KEY):
+				collision_object.collision_layer = int(collision_object.get_meta(COLLISION_LAYER_META_KEY, collision_object.collision_layer))
+			if collision_object.has_meta(COLLISION_MASK_META_KEY):
+				collision_object.collision_mask = int(collision_object.get_meta(COLLISION_MASK_META_KEY, collision_object.collision_mask))
+		else:
+			if !collision_object.has_meta(COLLISION_LAYER_META_KEY):
+				collision_object.set_meta(COLLISION_LAYER_META_KEY, collision_object.collision_layer)
+			if !collision_object.has_meta(COLLISION_MASK_META_KEY):
+				collision_object.set_meta(COLLISION_MASK_META_KEY, collision_object.collision_mask)
+			collision_object.collision_layer = 0
+			collision_object.collision_mask = 0
+
+	if root is CollisionShape3D:
+		var collision_shape: CollisionShape3D = root as CollisionShape3D
+		if collisions_enabled:
+			if collision_shape.has_meta(COLLISION_DISABLED_META_KEY):
+				collision_shape.disabled = bool(collision_shape.get_meta(COLLISION_DISABLED_META_KEY, collision_shape.disabled))
+			if collision_shape.has_meta(COLLISION_VISIBLE_META_KEY):
+				collision_shape.visible = bool(collision_shape.get_meta(COLLISION_VISIBLE_META_KEY, collision_shape.visible))
+		else:
+			if !collision_shape.has_meta(COLLISION_DISABLED_META_KEY):
+				collision_shape.set_meta(COLLISION_DISABLED_META_KEY, collision_shape.disabled)
+			if !collision_shape.has_meta(COLLISION_VISIBLE_META_KEY):
+				collision_shape.set_meta(COLLISION_VISIBLE_META_KEY, collision_shape.visible)
+			collision_shape.disabled = true
+			collision_shape.visible = false
+
+	if root is CollisionPolygon3D:
+		var collision_polygon: CollisionPolygon3D = root as CollisionPolygon3D
+		if collisions_enabled:
+			if collision_polygon.has_meta(COLLISION_DISABLED_META_KEY):
+				collision_polygon.disabled = bool(collision_polygon.get_meta(COLLISION_DISABLED_META_KEY, collision_polygon.disabled))
+			if collision_polygon.has_meta(COLLISION_VISIBLE_META_KEY):
+				collision_polygon.visible = bool(collision_polygon.get_meta(COLLISION_VISIBLE_META_KEY, collision_polygon.visible))
+		else:
+			if !collision_polygon.has_meta(COLLISION_DISABLED_META_KEY):
+				collision_polygon.set_meta(COLLISION_DISABLED_META_KEY, collision_polygon.disabled)
+			if !collision_polygon.has_meta(COLLISION_VISIBLE_META_KEY):
+				collision_polygon.set_meta(COLLISION_VISIBLE_META_KEY, collision_polygon.visible)
+			collision_polygon.disabled = true
+			collision_polygon.visible = false
+
+	for child in root.get_children():
+		if child is Node:
+			_set_collision_state_for_node(child as Node, collisions_enabled)
+
 func _refresh_display_mode_boxes() -> void:
 	var current_index: int = 0
 	for child in box_container.get_children():
 		if child is BoxItem:
 			var box: BoxItem = child as BoxItem
 			box.stop_attention()
-			box.reset_box_color()
+			_apply_box_color_override(box)
 			if editor_mode or !display_single_box_only:
 				box.visible = true
 			else:
 				box.visible = (display_box_index >= 0 and current_index == display_box_index)
 			current_index += 1
+
+func _set_box_color_override(box: BoxItem, color_value: Variant) -> void:
+	if box == null:
+		return
+
+	if color_value is Color:
+		var override_color: Color = color_value as Color
+		box.set_meta(BOX_COLOR_META_KEY, override_color)
+		box.set_box_color(override_color)
+		return
+
+	if box.has_meta(BOX_COLOR_META_KEY):
+		box.remove_meta(BOX_COLOR_META_KEY)
+	box.reset_box_color()
+
+func _apply_box_color_override(box: BoxItem) -> void:
+	if box == null:
+		return
+
+	if box.has_meta(BOX_COLOR_META_KEY):
+		var override_value: Variant = box.get_meta(BOX_COLOR_META_KEY, null)
+		if override_value is Color:
+			box.set_box_color(override_value as Color)
+			return
+
+	box.reset_box_color()
 
 func _machine_scene_path_from_name(machine_name: String) -> String:
 	return "res://machine_scenes/%s/%s.tscn" % [machine_name, machine_name]
@@ -829,8 +1054,31 @@ func _parse_color_param(value: Variant) -> Variant:
 		return value
 
 	if typeof(value) == TYPE_STRING:
-		var parsed := Color.from_string(str(value), Color(-1.0, -1.0, -1.0, -1.0))
+		var color_text: String = str(value).strip_edges()
+		var parsed := Color.from_string(color_text, Color(-1.0, -1.0, -1.0, -1.0))
 		if parsed.a < 0.0:
+			if color_text.begins_with("{") and color_text.ends_with("}"):
+				var inner: String = color_text.substr(1, color_text.length() - 2).strip_edges()
+				var parts: PackedStringArray = inner.split(",", false)
+				if parts.size() != 3:
+					return null
+
+				var r_text: String = str(parts[0]).strip_edges()
+				var g_text: String = str(parts[1]).strip_edges()
+				var b_text: String = str(parts[2]).strip_edges()
+				if !r_text.is_valid_float() or !g_text.is_valid_float() or !b_text.is_valid_float():
+					return null
+
+				var r: float = float(r_text)
+				var g: float = float(g_text)
+				var b: float = float(b_text)
+				if r > 1.0 or g > 1.0 or b > 1.0:
+					r /= 255.0
+					g /= 255.0
+					b /= 255.0
+
+				return Color(clamp(r, 0.0, 1.0), clamp(g, 0.0, 1.0), clamp(b, 0.0, 1.0), 1.0)
+
 			return null
 		return parsed
 
@@ -893,11 +1141,8 @@ func _show_box_from_transform(box_transform: Dictionary, camera_transform: Varia
 	_apply_box_transform(box, box_transform)
 	if box_id != "":
 		box.set_meta(BOX_ID_META_KEY, box_id)
-
-	if highlight_color != null:
-		box.set_box_color(highlight_color as Color)
-	else:
-		box.reset_box_color()
+	_set_box_color_override(box, highlight_color)
+	_update_collision_runtime_state()
 
 	display_box_index = _get_box_count() - 1
 	_refresh_display_mode_boxes()

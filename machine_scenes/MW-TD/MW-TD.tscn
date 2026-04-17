@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://c74afbyo26go7"]
 
 [ext_resource type="PackedScene" uid="uid://blx3t2tnweglm" path="res://machine_scenes/MW-TD/Topdrive.static.glb" id="1_j2nfs"]
+[ext_resource type="Script" uid="uid://cti22gcjrly48" path="res://scripts/collision_mesh_generator.gd" id="2_52vdt"]
 
 [node name="Topdrive" unique_id=1226703568 instance=ExtResource("1_j2nfs")]
+script = ExtResource("2_52vdt")

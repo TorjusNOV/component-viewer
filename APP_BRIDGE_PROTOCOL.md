@@ -250,13 +250,18 @@ Loads a new machine scene.
 `payload.params`:
 
 - `machine_name` (string, optional) or `name` (string, alias)
+- `camera_transform` (optional):
+  - `position`: `{x,y,z}`
+  - `rotation`: `{x,y,z}`
 
 Behavior:
 
 - Resolves machine scene path as `res://machine_scenes/<machine_name>/<machine_name>.tscn`.
 - Machine name matching is case-insensitive against folders under `res://machine_scenes`.
+- If `camera_transform` is provided, camera transform is applied immediately before loading.
 - Replaces children under `World` with the loaded machine scene.
 - Clears all currently shown boxes before showing content for the new machine.
+- By default, load resets camera to the viewer default camera orientation; this reset is skipped when `camera_transform` is supplied.
 - If `machine_name` is omitted (empty params), current machine scene is unloaded (backward-compatible behavior).
 
 Success result (`app_response.payload.result`):
@@ -266,6 +271,7 @@ Success result (`app_response.payload.result`):
 Errors (`app_error.payload.error.code`):
 
 - `invalid_request` when `machine_name` contains path separators.
+- `invalid_request` when `camera_transform` is provided but invalid.
 - `machine_not_found` when resolved scene file does not exist.
 - `load_machine_failed` when scene cannot be loaded/instantiated.
 
@@ -332,6 +338,65 @@ Example:
 }
 ```
 
+#### 1b) `set_tool`
+
+Sets which tool is visible for machines that expose a tool-selection node.
+
+`payload.params`:
+
+- `tool_name` (string, optional) or `name` (string, alias)
+
+Behavior:
+
+- Searches loaded machine scene for first `Node3D` named `Tool` or `Tools` (case-insensitive).
+- Under that tool node, treats direct children as tool groups.
+- If `tool_name` matches one of those children (case-insensitive), meshes under that child are shown and meshes under sibling tool groups are hidden.
+- If `tool_name` is empty string, meshes under all tool groups are hidden.
+
+Success result (`app_response.payload.result`):
+
+- Current project state snapshot (same shape as `get_state`).
+
+Errors (`app_error.payload.error.code`):
+
+- `machine_not_loaded` when no machine is currently loaded.
+- `tools_not_available` when loaded machine does not expose a `Tool`/`Tools` node.
+- `tool_not_found` when requested `tool_name` is not found under tool node.
+
+Example:
+
+```json
+{
+  "type": "app_request",
+  "route": "component-viewer",
+  "correlation_id": "9e79b9ea-57a5-4b9e-9708-713dd56d5bb1",
+  "method": "set_tool",
+  "payload": {
+    "schema_version": 1,
+    "params": {
+      "tool_name": "Gripper"
+    }
+  }
+}
+```
+
+Hide-all example:
+
+```json
+{
+  "type": "app_request",
+  "route": "component-viewer",
+  "correlation_id": "79a243fd-e3cc-4135-9a22-0e93dfef7882",
+  "method": "set_tool",
+  "payload": {
+    "schema_version": 1,
+    "params": {
+      "tool_name": ""
+    }
+  }
+}
+```
+
 #### 2) `show_box`
 
 Shows a box from an explicit transform payload and applies a camera transform.
@@ -353,6 +418,7 @@ Shows a box from an explicit transform payload and applies a camera transform.
 Accepted `color` formats:
 
 - `"#RRGGBB"` or `"#RRGGBBAA"`
+- WinCC OA RGB string `"{123,23,46}"` (channels accepted as `0..255` or `0..1`)
 - dictionary `{ "r": ..., "g": ..., "b": ... }` using either `0..1` or `0..255`
 
 Behavior:
@@ -362,6 +428,7 @@ Behavior:
 - `replace_existing=false` is supported to keep multi-box workflows compatible.
 - If `color` is provided, selected box color changes to that color while keeping existing transparency.
 - If `color` is not provided, selected box uses the default green color.
+- Color override is persisted for that shown box and is reapplied during internal display refreshes until replaced/reset by a subsequent call.
 - If `boxId` is provided, it is stored on the created box and can be used later with `hide_box`.
 - The shown box runs a 3-second fade pulse for attention (in display mode).
 - If `move_camera` is true and `camera_transform` is provided, camera glides to `camera_transform`.
@@ -690,6 +757,7 @@ Current state snapshot includes:
 - `box_count` (int)
 - `machine_name` (string)
 - `machine_scene_path` (string)
+- `tool_name` (string, empty when no tool selected)
 - `camera.position` / `camera.rotation` (vector dictionaries)
 
 ### Project Events Emitted
@@ -699,6 +767,7 @@ The project emits `app_event` frames with the following behavior:
 - `viewer_ready`: Sent when the IPC bridge connects and the project is ready to serve app requests.
 - `machine_loaded`: Sent after `load_machine` succeeds.
 - `machine_unloaded`: Sent when `unload_machine` succeeds, or when `load_machine` is called without `machine_name` and an active machine is unloaded.
+- `tool_changed`: Sent after `set_tool` succeeds.
 - `display_box_changed`: Sent after display target box changes (for example via `show_box`).
 - `box_deleted`: Sent when a box is deleted (Delete key or IPC deletion path).
 - `boxes_hidden`: Sent when all boxes are removed via `hide_boxes` (or internal hide-all flow).

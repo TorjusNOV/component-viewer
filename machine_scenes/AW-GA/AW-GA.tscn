@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://yrvdddhomy8g"]
 
 [ext_resource type="PackedScene" uid="uid://b0aae4qbsmlfb" path="res://machine_scenes/AW-GA/GuideArm.static.glb" id="1_twqf6"]
+[ext_resource type="Script" uid="uid://cti22gcjrly48" path="res://scripts/collision_mesh_generator.gd" id="2_ykqec"]
 
 [node name="GuideArm" unique_id=1826141298 instance=ExtResource("1_twqf6")]
+script = ExtResource("2_ykqec")

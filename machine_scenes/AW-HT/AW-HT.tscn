@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://c7ljgoghvd0bm"]
 
 [ext_resource type="PackedScene" uid="uid://bd8gpdnggdu74" path="res://machine_scenes/AW-HT/RoughneckAux.static.glb" id="1_cp85t"]
+[ext_resource type="Script" uid="uid://cti22gcjrly48" path="res://scripts/collision_mesh_generator.gd" id="2_2uyok"]
 
 [node name="RoughneckAux" unique_id=199683425 instance=ExtResource("1_cp85t")]
+script = ExtResource("2_2uyok")

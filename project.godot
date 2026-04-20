@@ -131,7 +131,5 @@ apply_box_view={
 
 [rendering]
 
-rendering_device/driver.windows="d3d12"
 anti_aliasing/quality/msaa_3d=1
-anti_aliasing/quality/use_debanding=true
 environment/defaults/default_clear_color=Color(0.9490196, 0.9490196, 0.9490196, 1)

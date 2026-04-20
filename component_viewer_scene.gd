@@ -6,6 +6,7 @@ const COLLISION_LAYER_META_KEY: StringName = &"original_collision_layer"
 const COLLISION_MASK_META_KEY: StringName = &"original_collision_mask"
 const COLLISION_DISABLED_META_KEY: StringName = &"original_collision_disabled"
 const COLLISION_VISIBLE_META_KEY: StringName = &"original_collision_visible"
+const MACHINE_SCENE_EXTENSIONS: Array[String] = [".scn", ".tscn"]
 
 enum EditorSubMode {
 	SELECT,
@@ -354,7 +355,7 @@ func load_machine(machine_name: String, reset_camera_to_default: bool = true) ->
 		return ERR_FILE_NOT_FOUND
 
 	var normalized_scene_path: String = _machine_scene_path_from_name(resolved_machine_name)
-	if !ResourceLoader.exists(normalized_scene_path):
+	if normalized_scene_path == "":
 		return ERR_FILE_NOT_FOUND
 
 	var machine_scene := load(normalized_scene_path) as PackedScene
@@ -612,20 +613,23 @@ func _on_ipc_request_received(method: String, params: Dictionary, correlation_id
 			var load_result: int = load_machine(machine_name, load_camera_transform == null)
 			if load_result != OK:
 				var resolved_machine_name: String = _resolve_machine_name(machine_name)
-				var resolved_scene_path: String = _machine_scene_path_from_name(
-					resolved_machine_name if resolved_machine_name != "" else machine_name
-				)
+				var scene_machine_name: String = resolved_machine_name if resolved_machine_name != "" else machine_name
+				var resolved_scene_path: String = _machine_scene_path_from_name(scene_machine_name)
+				var candidate_scene_paths: Array[String] = _machine_scene_candidate_paths(scene_machine_name)
+				var preferred_scene_path: String = candidate_scene_paths[0] if candidate_scene_paths.size() > 0 else ""
 				if load_result == ERR_FILE_NOT_FOUND:
 					ipc_bridge.send_error(correlation_id, "machine_not_found", "Machine scene does not exist", {
 						"machine_name": machine_name,
 						"resolved_machine_name": resolved_machine_name,
-						"scene_path": resolved_scene_path
+						"scene_path": preferred_scene_path,
+						"scene_paths": candidate_scene_paths
 					})
 					return
 
 				ipc_bridge.send_error(correlation_id, "load_machine_failed", "Unable to load machine scene", {
 					"machine_name": machine_name,
-					"scene_path": resolved_scene_path,
+					"scene_path": resolved_scene_path if resolved_scene_path != "" else preferred_scene_path,
+					"scene_paths": candidate_scene_paths,
 					"error_code": load_result
 				})
 				return
@@ -998,7 +1002,17 @@ func _apply_box_color_override(box: BoxItem) -> void:
 	box.reset_box_color()
 
 func _machine_scene_path_from_name(machine_name: String) -> String:
-	return "res://machine_scenes/%s/%s.tscn" % [machine_name, machine_name]
+	for scene_path in _machine_scene_candidate_paths(machine_name):
+		if ResourceLoader.exists(scene_path):
+			return scene_path
+
+	return ""
+
+func _machine_scene_candidate_paths(machine_name: String) -> Array[String]:
+	var scene_paths: Array[String] = []
+	for extension in MACHINE_SCENE_EXTENSIONS:
+		scene_paths.append("res://machine_scenes/%s/%s%s" % [machine_name, machine_name, extension])
+	return scene_paths
 
 func _resolve_machine_name(machine_name: String) -> String:
 	var dir := DirAccess.open("res://machine_scenes")
@@ -1039,7 +1053,7 @@ func _list_machine_names() -> Array:
 			continue
 
 		var scene_path: String = _machine_scene_path_from_name(entry)
-		if ResourceLoader.exists(scene_path):
+		if scene_path != "":
 			result.append(entry)
 
 	dir.list_dir_end()

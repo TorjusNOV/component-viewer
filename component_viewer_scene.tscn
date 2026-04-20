@@ -45,5 +45,4 @@ shadow_enabled = true
 
 [node name="DirectionalLight3D2" type="DirectionalLight3D" parent="WorldEnvironment" unique_id=1278790680]
 transform = Transform3D(0.07425449, 0.8488603, -0.52337605, -0.4451321, 0.4978532, 0.7443115, 0.8923809, 0.177703, 0.41482285, -11.491698, 1.0016208, -1.2697183)
-visible = true
 light_energy = 0.28

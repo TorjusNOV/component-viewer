@@ -256,7 +256,7 @@ Loads a new machine scene.
 
 Behavior:
 
-- Resolves machine scene path as `res://machine_scenes/<machine_name>/<machine_name>.tscn`.
+- Resolves machine scene path as `res://machine_scenes/<machine_name>/<machine_name>.scn` first, then falls back to `.tscn`.
 - Machine name matching is case-insensitive against folders under `res://machine_scenes`.
 - If `camera_transform` is provided, camera transform is applied immediately before loading.
 - Replaces children under `World` with the loaded machine scene.
@@ -540,6 +540,10 @@ Example:
 #### 2c) `list_machine_scenes`
 
 Returns available machine scene names discovered under `res://machine_scenes`.
+
+Behavior:
+
+- Includes a machine name when either `<machine_name>.scn` or `<machine_name>.tscn` exists in that machine folder.
 
 `payload.params`: none required.
 

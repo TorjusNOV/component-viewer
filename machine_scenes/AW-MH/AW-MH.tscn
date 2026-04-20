@@ -1,7 +1,0 @@
-[gd_scene format=3 uid="uid://dk8jpijme1gm3"]
-
-[ext_resource type="PackedScene" uid="uid://ctdowvytmxl1f" path="res://machine_scenes/AW-MH/Mousehole.static.glb" id="1_jkjga"]
-[ext_resource type="Script" uid="uid://cti22gcjrly48" path="res://scripts/collision_mesh_generator.gd" id="2_v60yp"]
-
-[node name="Mousehole" unique_id=340919809 instance=ExtResource("1_jkjga")]
-script = ExtResource("2_v60yp")
